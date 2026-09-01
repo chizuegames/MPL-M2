@@ -15,6 +15,9 @@ Object.entries(M2_ROOM_LAYOUT).forEach(([room,pos])=>{
   if(button){button.style.left=`${pos.x}%`;button.style.top=`${pos.y}%`;}
 });
 
+/* La misión puede iniciar por B6, A6 o A5. A4 ya no es una entrada inicial. */
+GRAPH.ENTRADA=["B6","A6","A5"];
+
 /* Sustituye K, check y flecha provisional por las imágenes subidas. */
 marker=function(id,room,cls,text=""){
   removeMarker(id);
@@ -46,4 +49,5 @@ marker=function(id,room,cls,text=""){
 };
 
 /* Si ya había algún marcador al cargar la corrección, vuelve a dibujarlo. */
+turnOffScanner();
 refreshRoomMarkers();
