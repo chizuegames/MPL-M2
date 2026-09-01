@@ -1,4 +1,9 @@
-/* Calibración de posiciones e iconos reales de Misión 2. */
+/* =========================================================
+   AJUSTES DE MISIÓN 2
+   Este archivo corrige posiciones y, sobre todo, mantiene una sola
+   definición por sala para que ESCÁNER, ICONO y ENCUENTRO coincidan.
+   ========================================================= */
+
 const M2_ROOM_LAYOUT={
  A15:{x:13.3,y:19.8},A16:{x:86.9,y:19.8},
  B1:{x:13.3,y:29.8},A13:{x:31.6,y:29.8},A14:{x:70.2,y:29.8},B2:{x:86.9,y:29.8},
@@ -23,22 +28,32 @@ Object.entries(M2_ROOM_LAYOUT).forEach(([room,pos])=>{
 GRAPH.ENTRADA=["B6","A6","A5"];
 
 /* =========================================================
-   CORRECCIONES DE CONTENIDO
+   SALAS A FIJAS
    ========================================================= */
 
-/* A6 es un marciano MORADO: icono morado y pista con disparo final. */
-DEFINITIONS.A6={
+/* A6: marciano MORADO. */
+Object.assign(DEFINITIONS.A6,{
   type:"combat",
   label:"MARCIANO MORADO",
   card:"A6E.png",
   finalCard:"A6F.png",
   icon:"ICOMM.png",
   enemyColor:"purple",
-  requiredLastHit:"gun",
-  hp:{100:2,60:3,20:3}
-};
+  requiredLastHit:"gun"
+});
 
-/* A12 siempre debe mostrar SU propia escena, nunca A6E. */
+/* A5: marciano VERDE. */
+Object.assign(DEFINITIONS.A5,{
+  type:"combat",
+  label:"MARCIANO VERDE",
+  card:"A5E.png",
+  finalCard:"A5F.png",
+  icon:"ICOMV.png",
+  enemyColor:"green",
+  requiredLastHit:"fist"
+});
+
+/* A12 siempre usa su propia escena. */
 DEFINITIONS.A12={
   type:"handshake",
   label:"SEÑAL BIOLÓGICA",
@@ -47,30 +62,111 @@ DEFINITIONS.A12={
   icon:"ICOMV.png"
 };
 
-/*
-  Las antiguas TLL pasan a ser SLV.
-  Al revelarlas con el escáner no queda ningún icono de evento.
-  Al entrar sí se muestra la imagen SLV.png.
-*/
-function convertTLLToSLV(definition){
-  if(!definition)return;
-  if(definition.card==="TLL.png" || definition.sourceId==="TL"){
-    definition.type="simple";
-    definition.label="SALA VACÍA";
-    definition.card="SLV.png";
-    definition.icon=null;
-    definition.sourceId="SLV";
-  }
-}
-
-if(typeof B_EVENT_POOL!=="undefined"){
-  B_EVENT_POOL.forEach(convertTLLToSLV);
-}
-Object.values(DEFINITIONS).forEach(convertTLLToSLV);
-
-/* Finales de A1 y A2: usar sus resoluciones propias. */
+/* A1 y A2: puertas finales. */
 DEFINITIONS.A1.finalCard="A1F.png";
 DEFINITIONS.A2.finalCard="A2F.png";
+
+/* =========================================================
+   SALAS B ALEATORIAS
+   - 8 salas B.
+   - EXACTAMENTE 3 salas vacías.
+   - Las vacías no muestran icono al escanear y al entrar muestran SLV.png.
+   - Los otros 5 eventos se eligen SIN REPETICIÓN.
+   - Una vez asignado un evento a una B, esa misma definición se usa para
+     el icono del escáner y para el encuentro; no se vuelve a sortear.
+   ========================================================= */
+
+const M2_B_ROOMS=["B1","B2","B3","B4","B5","B6","B7","B8"];
+
+const M2_B_UNIQUE_EVENTS=[
+  {
+    sourceId:"BT",
+    type:"simple",
+    label:"RECUPERAR VIDA",
+    card:"SDV.png",
+    icon:"ICOBT.png"
+  },
+  {
+    sourceId:"CO",
+    type:"simple",
+    label:"CAJA DE OBJETO",
+    card:"CJO.png",
+    icon:"ICOCO.png"
+  },
+  {
+    sourceId:"TE",
+    type:"simple",
+    label:"TRAMPA DE ENERGÍA",
+    card:"TRE.png",
+    icon:"ICOTR.png"
+  },
+  {
+    sourceId:"TV",
+    type:"simple",
+    label:"TRAMPA DE VIDA",
+    card:"TRV.png",
+    icon:"ICOTR.png"
+  },
+  {
+    sourceId:"B6",
+    type:"combat",
+    label:"MARCIANO ROJO",
+    card:"B6E.png",
+    finalCard:"B6F.png",
+    icon:"ICOMR.png",
+    enemyColor:"red",
+    requiredLastHit:"fist",
+    hp:{100:3,60:4,20:4}
+  },
+  {
+    sourceId:"B8",
+    type:"combat",
+    label:"MARCIANO VERDE",
+    card:"B8E.png",
+    finalCard:"B8F.png",
+    icon:"ICOMV.png",
+    enemyColor:"green",
+    requiredLastHit:"fist",
+    hp:{100:2,60:3,20:3}
+  }
+];
+
+function cloneM2Event(event){
+  return {
+    ...event,
+    hp:event.hp?{...event.hp}:undefined
+  };
+}
+
+function makeEmptyM2Room(n){
+  return {
+    sourceId:`SLV${n}`,
+    type:"simple",
+    label:"SALA VACÍA",
+    card:"SLV.png",
+    icon:null,
+    isEmpty:true
+  };
+}
+
+function prepareMission2BRooms(){
+  /* Escoge 5 encuentros distintos de los 6 disponibles. */
+  const fiveEvents=shuffle(M2_B_UNIQUE_EVENTS).slice(0,5).map(cloneM2Event);
+  const threeEmpty=[makeEmptyM2Room(1),makeEmptyM2Room(2),makeEmptyM2Room(3)];
+
+  /* Mezcla las 8 asignaciones una sola vez. */
+  const assignments=shuffle([...fiveEvents,...threeEmpty]);
+
+  M2_B_ROOMS.forEach((room,index)=>{
+    DEFINITIONS[room]=assignments[index];
+  });
+}
+
+prepareMission2BRooms();
+
+/* =========================================================
+   PUERTAS A1/A2
+   ========================================================= */
 
 submitDoorCode=function(){
   if(state.encounterMode!=="codeFinal")return;
@@ -86,22 +182,13 @@ submitDoorCode=function(){
   state.encounterMode="missionFinal";
   codePanel.classList.remove("show");
   encounterBackButton.style.display="none";
-
-  encounterImage.onerror=()=>{
-    encounterImage.onerror=null;
-    encounterImage.src="SLV.png";
-  };
+  encounterImage.onerror=null;
   encounterImage.src=definition.finalCard;
   encounterCard.style.cursor="pointer";
   dockingImpactSound();
 };
 
-/*
-  A1 y A2 no deben encerrar al jugador si todavía no conoce 3435.
-  Este manejador se ejecuta antes que el manejador original del botón.
-  Cierra la puerta y devuelve al mapa conservando como posición la sala
-  desde la que se intentó entrar.
-*/
+/* Permite abandonar A1/A2 sin conocer todavía el código. */
 encounterBackButton.addEventListener("click",function(event){
   if(state.encounterMode!=="codeFinal")return;
 
@@ -120,6 +207,7 @@ encounterBackButton.addEventListener("click",function(event){
 /* =========================================================
    ICONOS REALES
    ========================================================= */
+
 marker=function(id,room,cls,text=""){
   removeMarker(id);
   const pos=ROOM_LAYOUT[room];
@@ -150,6 +238,6 @@ marker=function(id,room,cls,text=""){
   return image;
 };
 
-/* Limpia cualquier marcador previo y vuelve a dibujar el mapa. */
+/* Limpia cualquier resto visual creado antes del parche. */
 turnOffScanner();
 refreshRoomMarkers();
