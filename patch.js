@@ -26,6 +26,18 @@ GRAPH.ENTRADA=["B6","A6","A5"];
    CORRECCIONES DE CONTENIDO
    ========================================================= */
 
+/* A6 es un marciano MORADO: icono morado y pista con disparo final. */
+DEFINITIONS.A6={
+  type:"combat",
+  label:"MARCIANO MORADO",
+  card:"A6E.png",
+  finalCard:"A6F.png",
+  icon:"ICOMM.png",
+  enemyColor:"purple",
+  requiredLastHit:"gun",
+  hp:{100:2,60:3,20:3}
+};
+
 /* A12 siempre debe mostrar SU propia escena, nunca A6E. */
 DEFINITIONS.A12={
   type:"handshake",
