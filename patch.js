@@ -53,13 +53,22 @@ Object.assign(DEFINITIONS.A5,{
   requiredLastHit:"fist"
 });
 
-/* A12 siempre usa su propia escena. */
+/*
+   A12: el jugador puede combatir O ayudar.
+   - Disparo y puño reducen vida normalmente y pueden matar al marciano.
+   - El icono superior izquierdo (ayudar) es una alternativa opcional.
+   - Matarlo NO activa A12F; A12F queda reservado para la opción de ayudar.
+*/
 DEFINITIONS.A12={
-  type:"handshake",
-  label:"SEÑAL BIOLÓGICA",
+  type:"combat",
+  label:"MARCIANO VERDE",
   card:"A12E.png",
   finalCard:"A12F.png",
-  icon:"ICOMV.png"
+  icon:"ICOMV.png",
+  enemyColor:"green",
+  requiredLastHit:null,
+  hp:{100:2,60:3,20:3},
+  optionalHandshake:true
 };
 
 /* A1 y A2: puertas finales. */
@@ -163,6 +172,44 @@ function prepareMission2BRooms(){
 }
 
 prepareMission2BRooms();
+
+/* =========================================================
+   A12: COMBATE + AYUDA OPCIONAL
+   ========================================================= */
+
+/* Conserva el comportamiento normal de los combates, pero al abrir A12
+   también deja activo el hotspot superior izquierdo de ayuda. */
+const openEncounterM2Base=openEncounter;
+openEncounter=function(room){
+  openEncounterM2Base(room);
+  if(room==="A12" && state.encounterMode==="combat"){
+    handshakeButton.style.display="block";
+    encounterCard.classList.add("handshake");
+  }
+};
+
+/* La opción de ayuda es voluntaria. Si se pulsa, cancela el combate y
+   muestra A12F. Se usa captura para impedir que el listener antiguo interfiera. */
+handshakeButton.addEventListener("click",function(event){
+  if(state.pendingRoom!=="A12" || state.encounterMode!=="combat")return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const definition=definitionFor("A12");
+  state.encounterMode="handshakeFinal";
+  state.combat=null;
+  combatLocked=false;
+  encounterCard.classList.remove("combat","handshake");
+  enemyHp.style.display="none";
+  gunButton.style.display="none";
+  fistButton.style.display="none";
+  handshakeButton.style.display="none";
+  encounterBackButton.style.display="none";
+  setEncounterImage(definition.finalCard);
+  encounterCard.style.cursor="pointer";
+  itemSound();
+},true);
 
 /* =========================================================
    PUERTAS A1/A2
