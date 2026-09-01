@@ -60,10 +60,6 @@ Object.values(DEFINITIONS).forEach(convertTLLToSLV);
 DEFINITIONS.A1.finalCard="A1F.png";
 DEFINITIONS.A2.finalCard="A2F.png";
 
-/*
-  Si A1F/A2F todavía no han terminado de publicarse en GitHub Pages,
-  evita dejar una imagen rota y usa SLV de respaldo temporalmente.
-*/
 submitDoorCode=function(){
   if(state.encounterMode!=="codeFinal")return;
 
@@ -87,6 +83,27 @@ submitDoorCode=function(){
   encounterCard.style.cursor="pointer";
   dockingImpactSound();
 };
+
+/*
+  A1 y A2 no deben encerrar al jugador si todavía no conoce 3435.
+  Este manejador se ejecuta antes que el manejador original del botón.
+  Cierra la puerta y devuelve al mapa conservando como posición la sala
+  desde la que se intentó entrar.
+*/
+encounterBackButton.addEventListener("click",function(event){
+  if(state.encounterMode!=="codeFinal")return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  encounter.classList.remove("show");
+  state.pendingRoom=null;
+  state.encounterMode=null;
+  resetEncounterUI();
+  turnOffScanner();
+  refreshRoomMarkers();
+  showMessage("PUERTA CERRADA");
+},true);
 
 /* =========================================================
    ICONOS REALES
