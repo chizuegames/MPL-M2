@@ -1,7 +1,7 @@
 /* =========================================================
-   AJUSTES DE MISIÓN 2
-   Este archivo corrige posiciones y, sobre todo, mantiene una sola
-   definición por sala para que ESCÁNER, ICONO y ENCUENTRO coincidan.
+   MISIÓN 2 — CONFIGURACIÓN DEFINITIVA SEGÚN EL EXCEL
+   Las salas A son FIJAS. Las salas B sortean UNA VEZ las ocho
+   fichas B del Excel, sin reutilizar ninguna ficha.
    ========================================================= */
 
 const M2_ROOM_LAYOUT={
@@ -24,161 +24,112 @@ Object.entries(M2_ROOM_LAYOUT).forEach(([room,pos])=>{
   }
 });
 
-/* La misión puede iniciar por B6, A6 o A5. */
+/* Entradas reales de la misión. */
 GRAPH.ENTRADA=["B6","A6","A5"];
 
 /* =========================================================
-   SALAS A FIJAS
+   SALAS A — FIJAS, SIN SORTEO
+   Imagen, final e icono copiados de la tabla del Excel.
    ========================================================= */
 
-/* A6: marciano MORADO. */
-Object.assign(DEFINITIONS.A6,{
-  type:"combat",
-  label:"MARCIANO MORADO",
-  card:"A6E.png",
-  finalCard:"A6F.png",
-  icon:"ICOMM.png",
-  enemyColor:"purple",
-  requiredLastHit:"gun"
-});
-
-/* A5: marciano VERDE. */
-Object.assign(DEFINITIONS.A5,{
-  type:"combat",
-  label:"MARCIANO VERDE",
-  card:"A5E.png",
-  finalCard:"A5F.png",
-  icon:"ICOMV.png",
-  enemyColor:"green",
-  requiredLastHit:"fist"
-});
-
-/*
-   A12: el jugador puede combatir O ayudar.
-   - Disparo y puño reducen vida normalmente y pueden matar al marciano.
-   - El icono superior izquierdo (ayudar) es una alternativa opcional.
-   - Matarlo NO activa A12F; A12F queda reservado para la opción de ayudar.
-*/
+DEFINITIONS.A1={
+  type:"codeFinal",label:"SALA DE BOTÍN",card:"A1E.png",finalCard:"A1F.png",icon:"ICOBT.png"
+};
+DEFINITIONS.A2={
+  type:"codeFinal",label:"SALA DE BOTÍN",card:"A2E.png",finalCard:"A2F.png",icon:"ICOBT.png"
+};
+DEFINITIONS.A3={
+  type:"simple",label:"TRAMPA DE VIDA",card:"TRV.png",icon:"ICOTR.png",reward:"PIERDE 1 DE VIDA"
+};
+DEFINITIONS.A4={
+  type:"combat",label:"MARCIANO MORADO",card:"A4E.png",finalCard:"A4F.png",icon:"ICOMM.png",
+  enemyColor:"purple",requiredLastHit:"gun",hp:{100:1,60:2,20:2}
+};
+DEFINITIONS.A5={
+  type:"combat",label:"MARCIANO VERDE E",card:"A5E.png",finalCard:"A5F.png",icon:"ICOMV.png",
+  enemyColor:"green",requiredLastHit:"fist",hp:{100:1,60:1,20:2}
+};
+DEFINITIONS.A6={
+  type:"combat",label:"MARCIANO MORADO",card:"A6E.png",finalCard:"A6F.png",icon:"ICOMM.png",
+  enemyColor:"purple",requiredLastHit:"gun",hp:{100:1,60:2,20:2},reward:"GANA 1 ENERGÍA"
+};
+DEFINITIONS.A7={
+  type:"simple",label:"CAJA DE OBJETO",card:"CJO.png",icon:"ICOCO.png",reward:"TOMA UN OBJETO"
+};
+DEFINITIONS.A8={
+  type:"combat",label:"MARCIANO MORADO",card:"A8E.png",finalCard:"A8F.png",icon:"ICOMM.png",
+  enemyColor:"purple",requiredLastHit:"gun",hp:{100:1,60:2,20:2}
+};
+DEFINITIONS.A9={
+  type:"combat",label:"MARCIANO ROJO",card:"A9E.png",finalCard:"A9F.png",icon:"ICOMR.png",
+  enemyColor:"red",requiredLastHit:"fist",hp:{100:2,60:3,20:4}
+};
+DEFINITIONS.A10={
+  type:"simple",label:"TRAMPA DE ENERGÍA",card:"TRE.png",icon:"ICOTR.png",reward:"PIERDE 1 DE ENERGÍA"
+};
+DEFINITIONS.A11={
+  type:"simple",label:"VIDA",card:"SDV.png",icon:"ICOTL.png",reward:"MÁS 1 DE VIDA"
+};
 DEFINITIONS.A12={
-  type:"combat",
-  label:"MARCIANO VERDE",
-  card:"A12E.png",
-  finalCard:"A12F.png",
-  icon:"ICOMV.png",
-  enemyColor:"green",
-  requiredLastHit:null,
-  hp:{100:2,60:3,20:3},
-  optionalHandshake:true
+  type:"combat",label:"MARCIANO VERDE",card:"A12E.png",finalCard:"A12F.png",icon:"ICOMV.png",
+  enemyColor:"green",requiredLastHit:null,hp:{100:1,60:1,20:2},reward:"GANA UN OBJETO",optionalHandshake:true
+};
+DEFINITIONS.A13={
+  type:"simple",label:"VIDA",card:"SDV.png",icon:"ICOTL.png",reward:"MÁS 1 DE VIDA"
+};
+DEFINITIONS.A14={
+  type:"simple",label:"SALA VACÍA",card:"SLV.png",icon:null,isEmpty:true
+};
+DEFINITIONS.A15={
+  type:"simple",label:"SALA VACÍA",card:"SLV.png",icon:null,isEmpty:true
+};
+DEFINITIONS.A16={
+  type:"simple",label:"CAJA DE OBJETO",card:"CJO.png",icon:"ICOCO.png",reward:"TOMA UN OBJETO"
 };
 
-/* A1 y A2: puertas finales. */
-DEFINITIONS.A1.finalCard="A1F.png";
-DEFINITIONS.A2.finalCard="A2F.png";
-
 /* =========================================================
-   SALAS B ALEATORIAS
-   - 8 salas B.
-   - EXACTAMENTE 3 salas vacías.
-   - Las vacías no muestran icono al escanear y al entrar muestran SLV.png.
-   - Los otros 5 eventos se eligen SIN REPETICIÓN.
-   - Una vez asignado un evento a una B, esa misma definición se usa para
-     el icono del escáner y para el encuentro; no se vuelve a sortear.
+   SALAS B — ALEATORIAS
+   Se usan EXACTAMENTE las ocho filas B1–B8 del Excel, una vez cada una.
+   Por eso puede haber dos cajas y dos trampas de vida: son dos fichas
+   distintas del Excel, pero ninguna ficha individual se repite.
+   Solo una ficha B es sala vacía. Con A14 y A15 hay 3 vacías en total.
    ========================================================= */
 
 const M2_B_ROOMS=["B1","B2","B3","B4","B5","B6","B7","B8"];
 
-const M2_B_UNIQUE_EVENTS=[
-  {
-    sourceId:"BT",
-    type:"simple",
-    label:"RECUPERAR VIDA",
-    card:"SDV.png",
-    icon:"ICOBT.png"
-  },
-  {
-    sourceId:"CO",
-    type:"simple",
-    label:"CAJA DE OBJETO",
-    card:"CJO.png",
-    icon:"ICOCO.png"
-  },
-  {
-    sourceId:"TE",
-    type:"simple",
-    label:"TRAMPA DE ENERGÍA",
-    card:"TRE.png",
-    icon:"ICOTR.png"
-  },
-  {
-    sourceId:"TV",
-    type:"simple",
-    label:"TRAMPA DE VIDA",
-    card:"TRV.png",
-    icon:"ICOTR.png"
-  },
-  {
-    sourceId:"B6",
-    type:"combat",
-    label:"MARCIANO ROJO",
-    card:"B6E.png",
-    finalCard:"B6F.png",
-    icon:"ICOMR.png",
-    enemyColor:"red",
-    requiredLastHit:"fist",
-    hp:{100:3,60:4,20:4}
-  },
-  {
-    sourceId:"B8",
-    type:"combat",
-    label:"MARCIANO VERDE",
-    card:"B8E.png",
-    finalCard:"B8F.png",
-    icon:"ICOMV.png",
-    enemyColor:"green",
-    requiredLastHit:"fist",
-    hp:{100:2,60:3,20:3}
-  }
+const M2_B_EVENT_POOL=[
+  {sourceId:"B1",type:"simple",label:"CAJA DE OBJETO",card:"CJO.png",icon:"ICOCO.png",reward:"TOMA UN OBJETO"},
+  {sourceId:"B2",type:"simple",label:"TRAMPA DE VIDA",card:"TRV.png",icon:"ICOTR.png",reward:"PIERDE 1 DE VIDA"},
+  {sourceId:"B3",type:"simple",label:"CAJA DE OBJETO",card:"CJO.png",icon:"ICOCO.png",reward:"TOMA UN OBJETO"},
+  {sourceId:"B4",type:"combat",label:"MARCIANO ROJO",card:"B4E.png",finalCard:"B4F.png",icon:"ICOMR.png",
+    enemyColor:"red",requiredLastHit:"fist",hp:{100:2,60:3,20:4}},
+  {sourceId:"B5",type:"simple",label:"SALA VACÍA",card:"SLV.png",icon:null,isEmpty:true},
+  {sourceId:"B6",type:"combat",label:"MARCIANO MORADO E1",card:"B6E.png",finalCard:"B6F.png",icon:"ICOMM.png",
+    enemyColor:"purple",requiredLastHit:"gun",hp:{100:3,60:4,20:6}},
+  {sourceId:"B7",type:"simple",label:"TRAMPA DE VIDA",card:"TRV.png",icon:"ICOTR.png"},
+  {sourceId:"B8",type:"combat",label:"MARCIANO MORADO E2",card:"B8E.png",finalCard:"B8F.png",icon:"ICOMM.png",
+    enemyColor:"purple",requiredLastHit:"gun",hp:{100:4,60:5,20:6}}
 ];
 
-function cloneM2Event(event){
-  return {
-    ...event,
-    hp:event.hp?{...event.hp}:undefined
-  };
-}
-
-function makeEmptyM2Room(n){
-  return {
-    sourceId:`SLV${n}`,
-    type:"simple",
-    label:"SALA VACÍA",
-    card:"SLV.png",
-    icon:null,
-    isEmpty:true
-  };
+function cloneM2Definition(def){
+  return {...def,hp:def.hp?{...def.hp}:undefined};
 }
 
 function prepareMission2BRooms(){
-  /* Escoge 5 encuentros distintos de los 6 disponibles. */
-  const fiveEvents=shuffle(M2_B_UNIQUE_EVENTS).slice(0,5).map(cloneM2Event);
-  const threeEmpty=[makeEmptyM2Room(1),makeEmptyM2Room(2),makeEmptyM2Room(3)];
-
-  /* Mezcla las 8 asignaciones una sola vez. */
-  const assignments=shuffle([...fiveEvents,...threeEmpty]);
-
+  const assignments=shuffle(M2_B_EVENT_POOL).map(cloneM2Definition);
   M2_B_ROOMS.forEach((room,index)=>{
     DEFINITIONS[room]=assignments[index];
   });
 }
-
 prepareMission2BRooms();
 
 /* =========================================================
-   A12: COMBATE + AYUDA OPCIONAL
+   A12 — COMBATE NORMAL + AYUDA OPCIONAL
+   El icono de arriba a la izquierda NO es obligatorio.
+   El jugador puede matar al marciano con puños/disparos o usar la ayuda.
+   A12F se reserva para la opción de ayuda.
    ========================================================= */
 
-/* Conserva el comportamiento normal de los combates, pero al abrir A12
-   también deja activo el hotspot superior izquierdo de ayuda. */
 const openEncounterM2Base=openEncounter;
 openEncounter=function(room){
   openEncounterM2Base(room);
@@ -188,11 +139,8 @@ openEncounter=function(room){
   }
 };
 
-/* La opción de ayuda es voluntaria. Si se pulsa, cancela el combate y
-   muestra A12F. Se usa captura para impedir que el listener antiguo interfiera. */
 handshakeButton.addEventListener("click",function(event){
   if(state.pendingRoom!=="A12" || state.encounterMode!=="combat")return;
-
   event.preventDefault();
   event.stopImmediatePropagation();
 
@@ -212,12 +160,11 @@ handshakeButton.addEventListener("click",function(event){
 },true);
 
 /* =========================================================
-   PUERTAS A1/A2
+   A1 / A2 — CÓDIGO 3435 Y SALIDA LIBRE
    ========================================================= */
 
 submitDoorCode=function(){
   if(state.encounterMode!=="codeFinal")return;
-
   if(doorCode.value.trim()!=="3435"){
     showMessage("CÓDIGO INCORRECTO");
     doorCode.select();
@@ -235,13 +182,8 @@ submitDoorCode=function(){
   dockingImpactSound();
 };
 
-/*
-   Salir de A1/A2 sin perder la posición anterior.
-   La habitación final NO se marca como completada ni se mueve a Keilan allí.
-*/
 function exitCodeRoom(){
   if(state.encounterMode!=="codeFinal")return;
-
   encounter.classList.remove("show");
   state.pendingRoom=null;
   state.encounterMode=null;
@@ -251,7 +193,6 @@ function exitCodeRoom(){
   showMessage("PUERTA CERRADA");
 }
 
-/* El botón VOLVER sigue funcionando. */
 encounterBackButton.addEventListener("click",function(event){
   if(state.encounterMode!=="codeFinal")return;
   event.preventDefault();
@@ -259,26 +200,17 @@ encounterBackButton.addEventListener("click",function(event){
   exitCodeRoom();
 },true);
 
-/*
-   También se puede salir simplemente tocando la pantalla.
-   Solo se respetan el campo donde se escribe 3435 y el botón ABRIR,
-   para que introducir/probar el código no cierre la escena accidentalmente.
-*/
 encounter.addEventListener("click",function(event){
   if(state.encounterMode!=="codeFinal")return;
-
   const target=event.target;
-  if(target===doorCode || target===submitCode || target.closest("#doorCode") || target.closest("#submitCode")){
-    return;
-  }
-
+  if(target===doorCode || target===submitCode || target.closest("#doorCode") || target.closest("#submitCode"))return;
   event.preventDefault();
   event.stopImmediatePropagation();
   exitCodeRoom();
 },true);
 
 /* =========================================================
-   ICONOS REALES
+   MARCADORES REALES DEL MAPA
    ========================================================= */
 
 marker=function(id,room,cls,text=""){
@@ -311,6 +243,6 @@ marker=function(id,room,cls,text=""){
   return image;
 };
 
-/* Limpia cualquier resto visual creado antes del parche. */
+/* Borra cualquier marcador heredado de la configuración anterior. */
 turnOffScanner();
 refreshRoomMarkers();
