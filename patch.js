@@ -188,12 +188,12 @@ submitDoorCode=function(){
   dockingImpactSound();
 };
 
-/* Permite abandonar A1/A2 sin conocer todavía el código. */
-encounterBackButton.addEventListener("click",function(event){
+/*
+   Salir de A1/A2 sin perder la posición anterior.
+   La habitación final NO se marca como completada ni se mueve a Keilan allí.
+*/
+function exitCodeRoom(){
   if(state.encounterMode!=="codeFinal")return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
 
   encounter.classList.remove("show");
   state.pendingRoom=null;
@@ -202,6 +202,32 @@ encounterBackButton.addEventListener("click",function(event){
   turnOffScanner();
   refreshRoomMarkers();
   showMessage("PUERTA CERRADA");
+}
+
+/* El botón VOLVER sigue funcionando. */
+encounterBackButton.addEventListener("click",function(event){
+  if(state.encounterMode!=="codeFinal")return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  exitCodeRoom();
+},true);
+
+/*
+   También se puede salir simplemente tocando la pantalla.
+   Solo se respetan el campo donde se escribe 3435 y el botón ABRIR,
+   para que introducir/probar el código no cierre la escena accidentalmente.
+*/
+encounter.addEventListener("click",function(event){
+  if(state.encounterMode!=="codeFinal")return;
+
+  const target=event.target;
+  if(target===doorCode || target===submitCode || target.closest("#doorCode") || target.closest("#submitCode")){
+    return;
+  }
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  exitCodeRoom();
 },true);
 
 /* =========================================================
